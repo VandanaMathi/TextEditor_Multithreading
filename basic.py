@@ -1,16 +1,17 @@
+import os
 import tkinter
-import os	
 from tkinter import *
-from tkinter.messagebox import *
 from tkinter.filedialog import *
+from tkinter.messagebox import *
+
 
 class Notepad:
 
 	__root = Tk()
 
 	# default window width and height
-	__thisWidth = 300
-	__thisHeight = 300
+	__thisWidth = 500
+	__thisHeight = 500
 	__thisTextArea = Text(__root)
 	__thisMenuBar = Menu(__root)
 	__thisFileMenu = Menu(__thisMenuBar, tearoff=0)
@@ -42,7 +43,7 @@ class Notepad:
 			pass
 
 		# Set the window text
-		self.__root.title("Untitled - Notepad")
+		self.__root.title("Vandana - Notepad")
 
 		# Center the window
 		screenWidth = self.__root.winfo_screenwidth()
@@ -121,7 +122,7 @@ class Notepad:
 		# exit()
 
 	def __showAbout(self):
-		showinfo("Notepad","Mrinal Verma")
+		showinfo("Notepad","Mohana theni Vandu")
 
 	def __openFile(self):
 		
@@ -188,6 +189,9 @@ class Notepad:
 	def __paste(self):
 		self.__thisTextArea.event_generate("<<Paste>>")
 
+	def __(self):
+		self.__thisTextArea.event_generate("<<Cut>>")
+
 	def run(self):
 
 		# Run main application
@@ -199,3 +203,5 @@ class Notepad:
 # Run main application
 notepad = Notepad(width=600,height=400)
 notepad.run()
+
+
