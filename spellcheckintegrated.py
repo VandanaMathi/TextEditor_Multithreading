@@ -1,4 +1,4 @@
-import tkinter
+import tkinter 
 import os	
 from tkinter import *
 from tkinter.messagebox import *
@@ -33,6 +33,7 @@ class Notepad:
 	__thisFileMenu = Menu(__thisMenuBar, tearoff=0)
 	__thisEditMenu = Menu(__thisMenuBar, tearoff=0)
 	__thisHelpMenu = Menu(__thisMenuBar, tearoff=0)
+	__thisWordCount = Menu()
 	
 	# To add scrollbar
 	__thisScrollBar = Scrollbar(__thisTextArea)	
@@ -77,7 +78,7 @@ class Notepad:
 										left, top))
 
 		# To make the textarea auto resizable
-		self.__root.grid_rowconfigure(0, weight=1)
+		self.__root.grid_rowconfigure(0, weight=1) 
 		self.__root.grid_columnconfigure(0, weight=1)
 
 		# Add controls (widget)
@@ -295,6 +296,19 @@ class Notepad:
 					count+=len(word)
 			switch="OFF"
 		
+	#method to find the number of words in the file 
+	def _wordCount(self):
+		#word count is found 
+		file = open(self.__file,"r")
+		data = file.read()
+		words = file.split()
+		
+		#no of words stored in noWords 
+		noWords = len(words)
+
+
+
+	
 	def run(self):
 		# Run main application
 		self.__root.mainloop()
