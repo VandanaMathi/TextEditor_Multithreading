@@ -14,7 +14,7 @@ def read_dictionary_file():
 		return
 	
 	with open("words.txt", "r") as f:
-		contents = f.read()
+		contents = f.read()        
 	
 	dictionary = set(
 	word.lower()
@@ -165,7 +165,7 @@ class Notepad:
 		# exit()
 
 	def __showAbout(self):
-		showinfo("Notepad","Mrinal Verma")
+		showinfo("Notepad","Easy to use notepad with spellchecker option")
 
 	def __openFile(self):
 		global switch
@@ -288,8 +288,12 @@ class Notepad:
 					if check==False:
 						linepos=list_lines.index(line)+1
 						wordpos=list_word.index(word)
-						start=float(str(linepos)+'.'+str(count+wordpos))
-						end=float(str(linepos)+'.'+str(count+wordpos+len(word)))
+						#print(linepos,wordpos,count,len(word))
+						start_decimal_index=count+wordpos
+						end_decimal_index=count+wordpos+len(word)
+						start=str(linepos)+'.'+str(start_decimal_index)
+						end=str(linepos)+'.'+str(end_decimal_index)
+						#print(start,end)
 						self.__thisTextArea.tag_add("Error",str(start),str(end))
 						self.__thisTextArea.tag_config("Error",background="yellow",foreground="red")
 					count+=len(word)
@@ -305,3 +309,4 @@ class Notepad:
 # Run main application
 notepad = Notepad(width=600,height=400)
 notepad.run()
+
