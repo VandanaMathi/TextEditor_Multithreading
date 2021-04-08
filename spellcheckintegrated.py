@@ -1,4 +1,4 @@
-import tkinter
+import tkinter 
 import os	
 from tkinter import *
 from tkinter.messagebox import *
@@ -33,6 +33,7 @@ class Notepad:
 	__thisFileMenu = Menu(__thisMenuBar, tearoff=0)
 	__thisEditMenu = Menu(__thisMenuBar, tearoff=0)
 	__thisHelpMenu = Menu(__thisMenuBar, tearoff=0)
+	__thisWordMenu = Menu(__thisMenuBar, tearoff=0)
 	
 	# To add scrollbar
 	__thisScrollBar = Scrollbar(__thisTextArea)	
@@ -77,7 +78,7 @@ class Notepad:
 										left, top))
 
 		# To make the textarea auto resizable
-		self.__root.grid_rowconfigure(0, weight=1)
+		self.__root.grid_rowconfigure(0, weight=1) 
 		self.__root.grid_columnconfigure(0, weight=1)
 
 		# Add controls (widget)
@@ -146,7 +147,12 @@ class Notepad:
 
 		self.__root.config(menu=self.__thisMenuBar)
 
-		self.__thisScrollBar.pack(side=RIGHT,fill=Y)			
+		self.__thisScrollBar.pack(side=RIGHT,fill=Y)	
+
+		#To create a word count feature in menu Bar 
+		self.__thisMenuBar.add_cascade(label="Word Count",menu=self.__thisWordMenu)
+		self.__thisWordMenu.add_cascade(label= "Total Words", command = self.__wordCount)
+
 		
 		# Scrollbar will adjust automatically according to the content	
 		self.__thisScrollBar.config(command=self.__thisTextArea.yview)	
@@ -299,6 +305,28 @@ class Notepad:
 					count+=len(word)
 			switch="OFF"
 		
+	#method to find the number of words in the file 
+	def __wordCount(self):
+		#word count is found 
+		if self.__file is None:
+			tkinter.messagebox.showinfo("Save the file","You have to save the file before finding word count")
+		else:
+			file = open(self.__file,"r")
+			data = file.read()
+			words = data.split()
+
+			#no of words stored in noWords 
+			noWords = len(words)
+			tkinter.messagebox.showinfo("Total Words =",str(noWords))
+
+
+		
+	
+		'''WordDisp = Label(self.__root,Text=str(noWords) )
+		WordDisp.grid(row = 1, column= END, sticky= S)''' 
+
+
+	
 	def run(self):
 		# Run main application
 		self.__root.mainloop()
