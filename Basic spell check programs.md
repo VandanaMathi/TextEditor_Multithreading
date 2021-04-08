@@ -1,1 +1,1 @@
-Various different basic spell check
+Mutlti-Tab Basic editor
