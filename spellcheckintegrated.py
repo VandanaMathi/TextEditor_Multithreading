@@ -3,6 +3,8 @@ import os
 from tkinter import *
 from tkinter.messagebox import *
 from tkinter.filedialog import *
+import threading
+from rake_nltk import Rake
 
 dictionary=set()
 appl_closed=0
@@ -128,7 +130,7 @@ class Notepad:
 		# To give a feature to select all
 		self.__thisEditMenu.add_command(label="Select all",command=self.__selectall)
 		
-		self.__thisEditMenu.add_command(label="Spell check On/Off",command=self.is_spelled_correctly)
+		self.__thisEditMenu.add_command(label="Spell check On/Off",command=self.__is_spelled_correctly)
 		
 		self.__thisEditMenu.add_separator()
 		
@@ -150,9 +152,9 @@ class Notepad:
 		self.__thisScrollBar.pack(side=RIGHT,fill=Y)	
 
 		#To create a word count feature in menu Bar 
-		self.__thisMenuBar.add_cascade(label="Word Count",menu=self.__thisWordMenu)
+		self.__thisMenuBar.add_cascade(label="Text analysis",menu=self.__thisWordMenu)
 		self.__thisWordMenu.add_cascade(label= "Total Words", command = self.__wordCount)
-
+		self.__thisWordMenu.add_cascade(label= "Keywords", command = self.__keyWord)
 		
 		# Scrollbar will adjust automatically according to the content	
 		self.__thisScrollBar.config(command=self.__thisTextArea.yview)	
@@ -264,7 +266,7 @@ class Notepad:
 	def __paste(self):
 		self.__thisTextArea.event_generate("<<Paste>>")                   
 		            
-	def is_spelled_correctly(self):
+	def __is_spelled_correctly(self):
 		global switch        
 		# Return True if spelled correctly; false otherwise
 		if self.__file is None:
@@ -304,7 +306,14 @@ class Notepad:
 						self.__thisTextArea.tag_config("Error",background="yellow",foreground="red")
 					count+=len(word)
 			switch="OFF"
-		
+	
+	#trying multithreading 
+	def __SpellCheck(self,event = None):
+		t1=threading.Thread(target=self.__is_spelled_correctly)
+		t1.start()
+		t1.join()
+
+
 	#method to find the number of words in the file 
 	def __wordCount(self):
 		#word count is found 
@@ -319,7 +328,31 @@ class Notepad:
 			noWords = len(words)
 			tkinter.messagebox.showinfo("Total Words =",str(noWords))
 
-
+	#method to find the keywords in the text 
+	def __keyWord(self):
+		if self.__file is None:
+			tkinter.messagebox.showinfo("Save the file","You have to save the file before finding word count")
+		else:
+			file = open(self.__file,"r")
+			data = file.read()
+			#preprocessing the data to remove blank spaces 
+			l = data.split(" ")
+			print(l)
+			x= list()
+			for i in l:
+				if i!='': x.append(i)
+        
+			data = " ".join(x)
+			r = Rake()
+			#extract the keywords 
+			r.extract_keywords_from_text(data)
+			#get the top 3 keywords 
+			keywordsList = r.get_ranked_phrases()[:3]
+			keywordsStr = "  "
+			#Converting list to string for output 
+			keywordsStr.join(keywordsList)
+			
+			tkinter.messagebox.showinfo("Keywords = ",keywordsStr[0:3])
 		
 	
 		'''WordDisp = Label(self.__root,Text=str(noWords) )
