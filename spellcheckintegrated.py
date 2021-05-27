@@ -87,15 +87,14 @@ class Notepad:
 		self.__thisTextArea.grid(sticky = N + E + S + W)
 		
 		# To open new file
-		self.__thisFileMenu.add_command(label="New",
-										command=self.__newFile)	
+		self.__thisFileMenu.add_command(label="New", accelerator="Ctrl+N",command=self.__newFile)	
 		
 		# To open a already existing file
-		self.__thisFileMenu.add_command(label="Open",
+		self.__thisFileMenu.add_command(label="Open",accelerator="Ctrl+O",
 										command=self.__openFile)
 		
 		# To save current file
-		self.__thisFileMenu.add_command(label="Save",
+		self.__thisFileMenu.add_command(label="Save",accelerator="Ctrl+S",
 										command=self.__saveFile)	
         
         # To save as current file
@@ -116,21 +115,21 @@ class Notepad:
 		self.__thisEditMenu.add_command(label="Redo",command=self.__thisTextArea.edit_redo)
 		
 		# To give a feature of cut
-		self.__thisEditMenu.add_command(label="Cut",
+		self.__thisEditMenu.add_command(label="Cut", accelerator="Ctrl+X",
 										command=self.__cut)			
 	
 		# to give a feature of copy	
-		self.__thisEditMenu.add_command(label="Copy",
+		self.__thisEditMenu.add_command(label="Copy",accelerator="Ctrl+C",
 										command=self.__copy)		
 		
 		# To give a feature of paste
-		self.__thisEditMenu.add_command(label="Paste",
+		self.__thisEditMenu.add_command(label="Paste",accelerator="Ctrl+V",
 										command=self.__paste)		
 		
 		# To give a feature to select all
 		self.__thisEditMenu.add_command(label="Select all",command=self.__selectall)
 		
-		self.__thisEditMenu.add_command(label="Spell check On/Off",command=self.__is_spelled_correctly)
+		self.__thisEditMenu.add_command(label="Spell check On/Off",accelerator="Ctrl+P",command=self.__is_spelled_correctly)
 		
 		self.__thisEditMenu.add_separator()
 		
@@ -153,8 +152,8 @@ class Notepad:
 
 		#To create a word count feature in menu Bar 
 		self.__thisMenuBar.add_cascade(label="Text analysis",menu=self.__thisWordMenu)
-		self.__thisWordMenu.add_cascade(label= "Total Words", command = self.__wordCount)
-		self.__thisWordMenu.add_cascade(label= "Keywords", command = self.__keyWord)
+		self.__thisWordMenu.add_cascade(label= "Total Words",accelerator= "Ctrl+W", command = self.__wordCount)
+		self.__thisWordMenu.add_cascade(label= "Keywords", accelerator= "Ctrl+K",command = self.__keyWord)
 		
 		# Scrollbar will adjust automatically according to the content	
 		self.__thisScrollBar.config(command=self.__thisTextArea.yview)	
@@ -173,7 +172,10 @@ class Notepad:
 		# exit()
 
 	def __showAbout(self):
-		showinfo("Notepad","Easy to use notepad with spellchecker option")
+		showinfo("Notepad",'''Easy to use notepad with spellchecker, word count and keywords display\n 
+		Ctrl+P - spell checker\n
+		Ctrl+W - total word count\n
+		Ctrl+K - Keywords display''')
 
 	def __openFile(self):
 		global switch
@@ -331,13 +333,12 @@ class Notepad:
 	#method to find the keywords in the text 
 	def __keyWord(self):
 		if self.__file is None:
-			tkinter.messagebox.showinfo("Save the file","You have to save the file before finding word count")
+			tkinter.messagebox.showinfo("Save the file","You have to save the file before finding the keywords")
 		else:
 			file = open(self.__file,"r")
 			data = file.read()
 			#preprocessing the data to remove blank spaces 
 			l = data.split(" ")
-			print(l)
 			x= list()
 			for i in l:
 				if i!='': x.append(i)
@@ -348,11 +349,10 @@ class Notepad:
 			r.extract_keywords_from_text(data)
 			#get the top 3 keywords 
 			keywordsList = r.get_ranked_phrases()[:3]
-			keywordsStr = "  "
 			#Converting list to string for output 
-			keywordsStr.join(keywordsList)
-			
-			tkinter.messagebox.showinfo("Keywords = ",keywordsStr[0:3])
+			#print(keywordsList)
+			keywordsStr = str(keywordsList)[1:-2]
+			tkinter.messagebox.showinfo("Keywords", keywordsStr) 
 		
 	
 		'''WordDisp = Label(self.__root,Text=str(noWords) )
