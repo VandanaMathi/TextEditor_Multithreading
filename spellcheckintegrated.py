@@ -38,6 +38,7 @@ class Notepad:
 	__thisWordMenu = Menu(__thisMenuBar, tearoff=0)
 	status = StringVar()
 	
+	
 	# To add scrollbar
 	__thisScrollBar = Scrollbar(__thisTextArea)	
 	__file = None
@@ -82,10 +83,10 @@ class Notepad:
 	
 		# Declaring Status variable
     	
-		#self.statusbar = Label(self.__root,textvariable=self.status,font=("consolas",11),bd=2,relief=GROOVE,state="active")
-		#self.statusbar.grid(row = 2, column = 0, sticky= N+S+E+W ) 
-		#self.statusbar.config(COMMAND = self.__thisTextArea.xview)
-		#self.__thisTextArea.config
+		self.statusbar = Label(master = self.__thisTextArea,textvariable=self.status,font=("consolas",8),state="active",justify='left') 
+		'''bd=2,relief=GROOVE,'''
+		self.statusbar.pack(side = BOTTOM,fill=X )
+		
 		
 		# To make the textarea auto resizable
 		self.__root.grid_rowconfigure(0, weight=1) 
@@ -169,12 +170,15 @@ class Notepad:
 
 		
 		threading.Thread(target=self.is_spelled_correctly).start()
-		#threading.Thread(target=self.__wordCount).start()
+		threading.Thread(target=self.__wordCount).start()
 		
-	
+		
+		
 		
 	def __quitApplication(self):
 		if tkinter.messagebox.askokcancel("Quit","Do you want to Quit?"):
+			threading.Thread(target=self.is_spelled_correctly).join()
+			threading.Thread(target=self.__wordCount).join()
 			appl_closed=1
 			self.__root.destroy()
 		else:
@@ -323,58 +327,41 @@ class Notepad:
 					count+=len(word)
 		self.__root.after(10,self.is_spelled_correctly)
 		
-		
-	def __StopStartWordCount(self):
-		global switch
-		if switch=="ON":
-			switch="OFF"
-		elif switch=="OFF":
-			switch="ON"
-		return
-		
+	
 	#method to find the number of words in the file 
 	def __wordCount(self):
 		global switch 
 		self.__thisTextArea.tag_remove("Error","1.0","end")
 		if switch=="ON":
 			#word count is found 
-			'''if self.__file is None:
-				tkinter.messagebox.showinfo("Save the file","You have to save the file before finding word count")
-			else:
-				'''
-			#file = open(self.__file,"r")
 			data = self.__thisTextArea.get(1.0,END)
 			words = data.split()
 
 			#no of words stored in noWords 
 			noWords = len(words)
-			tkinter.messagebox.showinfo("Total Words =",str(noWords))
-			#self.status.set("Total words = "+ str(noWords))
-			#self.__root.after(10,self.__wordCount)
+			self.status.set(str(noWords)+ " words")
+			self.__root.after(10,self.__wordCount)
 
 	#method to find the keywords in the text 
 	def __keyWord(self):
-		if self.__file is None:
-			tkinter.messagebox.showinfo("Save the file","You have to save the file before finding the keywords")
-		else:
-			file = open(self.__file,"r")
-			data = file.read()
-			#preprocessing the data to remove blank spaces 
-			l = data.split(" ")
-			x= list()
-			for i in l:
-				if i!='': x.append(i)
-        
-			data = " ".join(x)
-			r = Rake()
-			#extract the keywords 
-			r.extract_keywords_from_text(data)
-			#get the top 3 keywords 
-			keywordsList = r.get_ranked_phrases()[:3]
-			#Converting list to string for output 
-			#print(keywordsList)
-			keywordsStr = str(keywordsList)[1:-2]
-			tkinter.messagebox.showinfo("Keywords", keywordsStr) 
+		self.__thisTextArea.tag_remove("Error","1.0","end")
+		data = self.__thisTextArea.get(1.0,END)
+		#preprocessing the data to remove blank spaces 
+		l = data.split(" ")
+		x= list()
+		for i in l:
+			if i!='': x.append(i)
+	
+		data = " ".join(x)
+		r = Rake()
+		#extract the keywords 
+		r.extract_keywords_from_text(data)
+		#get the top 3 keywords 
+		keywordsList = r.get_ranked_phrases()[:3]
+		#Converting list to string for output 
+		#print(keywordsList)
+		keywordsStr = str(keywordsList)[1:-2]
+		tkinter.messagebox.showinfo("Keywords", keywordsStr) }
 		
 	
 
