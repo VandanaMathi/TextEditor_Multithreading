@@ -36,6 +36,7 @@ class Notepad:
 	__thisEditMenu = Menu(__thisMenuBar, tearoff=0)
 	__thisHelpMenu = Menu(__thisMenuBar, tearoff=0)
 	__thisWordMenu = Menu(__thisMenuBar, tearoff=0)
+	status = StringVar()
 	
 	# To add scrollbar
 	__thisScrollBar = Scrollbar(__thisTextArea)	
@@ -78,7 +79,14 @@ class Notepad:
 		self.__root.geometry('%dx%d+%d+%d' % (self.__thisWidth,
 										self.__thisHeight,
 										left, top))
-
+	
+		# Declaring Status variable
+    	
+		#self.statusbar = Label(self.__root,textvariable=self.status,font=("consolas",11),bd=2,relief=GROOVE,state="active")
+		#self.statusbar.grid(row = 2, column = 0, sticky= N+S+E+W ) 
+		#self.statusbar.config(COMMAND = self.__thisTextArea.xview)
+		#self.__thisTextArea.config
+		
 		# To make the textarea auto resizable
 		self.__root.grid_rowconfigure(0, weight=1) 
 		self.__root.grid_columnconfigure(0, weight=1)
@@ -129,7 +137,7 @@ class Notepad:
 		# To give a feature to select all
 		self.__thisEditMenu.add_command(label="Select all",command=self.__selectall)
 		
-		self.__thisEditMenu.add_command(label="Spell check On/Off",accelerator="Ctrl+P",command=self.__is_spelled_correctly)
+		self.__thisEditMenu.add_command(label="Spell check On/Off",accelerator="Ctrl+P",command=self.is_spelled_correctly)
 		
 		self.__thisEditMenu.add_separator()
 		
@@ -158,9 +166,11 @@ class Notepad:
 		# Scrollbar will adjust automatically according to the content	
 		self.__thisScrollBar.config(command=self.__thisTextArea.yview)	
 		self.__thisTextArea.config(yscrollcommand=self.__thisScrollBar.set)
+
 		
-		#self.__spellcheck()
-			#self.__spellcheck()
+		threading.Thread(target=self.is_spelled_correctly).start()
+		#threading.Thread(target=self.__wordCount).start()
+		
 	
 		
 	def __quitApplication(self):
@@ -268,18 +278,22 @@ class Notepad:
 	def __paste(self):
 		self.__thisTextArea.event_generate("<<Paste>>")                   
 		            
-	def __is_spelled_correctly(self):
-		global switch        
-		# Return True if spelled correctly; false otherwise
-		if self.__file is None:
-			tkinter.messagebox.showinfo("Save the file","You have to save the file before applying spellcheck")
+	def __StopStartspellcheck(self):
+		global switch
+		if switch=="ON":
+			switch="OFF"
 		elif switch=="OFF":
-			self.__thisTextArea.tag_remove("Error","1.0","end")
-			#self.__thisTextArea.tag_config("Clear",background="white",foreground="black")
 			switch="ON"
-		elif switch=="ON":
-			file=open(self.__file,"r")
-			list_lines=file.read().split("\n")
+		return
+		
+        
+	def is_spelled_correctly(self):
+		global switch
+		self.__thisTextArea.tag_remove("Error","1.0","end") 
+		if switch=="ON":
+			#print("In is spelled correctly")          
+			text_spellcheck = self.__thisTextArea.get(1.0,END)
+			list_lines=text_spellcheck.split("\n")
 			for line in list_lines:
 				list_word=line.split(" ")
 				count=0
@@ -307,28 +321,36 @@ class Notepad:
 						self.__thisTextArea.tag_add("Error",str(start),str(end))
 						self.__thisTextArea.tag_config("Error",background="yellow",foreground="red")
 					count+=len(word)
+		self.__root.after(10,self.is_spelled_correctly)
+		
+		
+	def __StopStartWordCount(self):
+		global switch
+		if switch=="ON":
 			switch="OFF"
-	
-	#trying multithreading 
-	def __SpellCheck(self,event = None):
-		t1=threading.Thread(target=self.__is_spelled_correctly)
-		t1.start()
-		t1.join()
-
-
+		elif switch=="OFF":
+			switch="ON"
+		return
+		
 	#method to find the number of words in the file 
 	def __wordCount(self):
-		#word count is found 
-		if self.__file is None:
-			tkinter.messagebox.showinfo("Save the file","You have to save the file before finding word count")
-		else:
-			file = open(self.__file,"r")
-			data = file.read()
+		global switch 
+		self.__thisTextArea.tag_remove("Error","1.0","end")
+		if switch=="ON":
+			#word count is found 
+			'''if self.__file is None:
+				tkinter.messagebox.showinfo("Save the file","You have to save the file before finding word count")
+			else:
+				'''
+			#file = open(self.__file,"r")
+			data = self.__thisTextArea.get(1.0,END)
 			words = data.split()
 
 			#no of words stored in noWords 
 			noWords = len(words)
 			tkinter.messagebox.showinfo("Total Words =",str(noWords))
+			#self.status.set("Total words = "+ str(noWords))
+			#self.__root.after(10,self.__wordCount)
 
 	#method to find the keywords in the text 
 	def __keyWord(self):
@@ -355,11 +377,10 @@ class Notepad:
 			tkinter.messagebox.showinfo("Keywords", keywordsStr) 
 		
 	
-		'''WordDisp = Label(self.__root,Text=str(noWords) )
-		WordDisp.grid(row = 1, column= END, sticky= S)''' 
-
 
 	
+	
+
 	def run(self):
 		# Run main application
 		self.__root.mainloop()
