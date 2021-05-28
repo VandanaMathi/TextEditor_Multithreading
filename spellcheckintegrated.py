@@ -1,10 +1,17 @@
 import tkinter 
 import os	
+from tkinter.simpledialog import *
 from tkinter import *
 from tkinter.messagebox import *
 from tkinter.filedialog import *
 import threading
 from rake_nltk import Rake
+
+#for performance measurement 
+import tracemalloc
+import pandas as pd
+import dask.dataframe as dd
+import time
 
 dictionary=set()
 appl_closed=0
@@ -84,9 +91,7 @@ class Notepad:
 		# Declaring Status variable
     	
 		self.statusbar = Label(master = self.__thisTextArea,textvariable=self.status,font=("consolas",8),state="active",justify='left') 
-		'''bd=2,relief=GROOVE,'''
 		self.statusbar.pack(side = BOTTOM,fill=X )
-		
 		
 		# To make the textarea auto resizable
 		self.__root.grid_rowconfigure(0, weight=1) 
@@ -118,7 +123,7 @@ class Notepad:
 									menu=self.__thisFileMenu)	
 		
 		# To give a feautre of undo
-		self.__thisEditMenu.add_command(label="Undo",command=self.__thisTextArea.edit_undo)
+		self.__thisEditMenu.add_command(label="Undo",command=self.__thisTextArea.edit_undo,accelerator="Ctrl+Z")
 		
 		# To give a feautre of redo
 		self.__thisEditMenu.add_command(label="Redo",command=self.__thisTextArea.edit_redo)
@@ -137,9 +142,7 @@ class Notepad:
 		
 		# To give a feature to select all
 		self.__thisEditMenu.add_command(label="Select all",command=self.__selectall)
-		
-		self.__thisEditMenu.add_command(label="Spell check On/Off",accelerator="Ctrl+P",command=self.is_spelled_correctly)
-		
+		#self.__thisEditMenu.add_command(label="Find",accelerator="Ctrl+F",command=self.find)
 		self.__thisEditMenu.add_separator()
 		
 		# To give a feautre of Reset
@@ -163,11 +166,31 @@ class Notepad:
 		self.__thisMenuBar.add_cascade(label="Text analysis",menu=self.__thisWordMenu)
 		self.__thisWordMenu.add_cascade(label= "Total Words",accelerator= "Ctrl+W", command = self.__wordCount)
 		self.__thisWordMenu.add_cascade(label= "Keywords", accelerator= "Ctrl+K",command = self.__keyWord)
+		self.__thisWordMenu.add_command(label="Spell check",accelerator="Ctrl+P",command=self.is_spelled_correctly)
 		
 		# Scrollbar will adjust automatically according to the content	
 		self.__thisScrollBar.config(command=self.__thisTextArea.yview)	
 		self.__thisTextArea.config(yscrollcommand=self.__thisScrollBar.set)
 
+		#binding all shortcuts 
+		#edit menu
+		self.__root.bind_all("<Control-C>", self.__copy)
+		self.__root.bind_all("<Control-V>", self.__paste)
+		self.__root.bind_all("<Control-X>", self.__cut)
+		self.__root.bind_all("<Control-P>", self.is_spelled_correctly)
+		#__root.bind_all("<Control-F>", self.find)
+		self.__root.bind_all("<Control-Z>", self.__thisTextArea.edit_undo)
+
+		#FileMenu 
+		self.__root.bind_all("<Control-S>", self.__saveFile)
+		self.__root.bind_all("<Control-N>", self.__newFile)
+		self.__root.bind_all("<Control-O>", self.__openFile)
+
+		#Word menu
+
+		self.__root.bind_all("<Control-P>", self.is_spelled_correctly)
+		self.__root.bind_all("<Control-W>", self.__wordCount)
+		self.__root.bind_all("<Control-K>", self.__keyWord)
 		
 		threading.Thread(target=self.is_spelled_correctly).start()
 		threading.Thread(target=self.__wordCount).start()
@@ -180,6 +203,8 @@ class Notepad:
 			threading.Thread(target=self.is_spelled_correctly).join()
 			threading.Thread(target=self.__wordCount).join()
 			appl_closed=1
+			tracing_mem()
+
 			self.__root.destroy()
 		else:
 			return
@@ -325,14 +350,14 @@ class Notepad:
 						self.__thisTextArea.tag_add("Error",str(start),str(end))
 						self.__thisTextArea.tag_config("Error",background="yellow",foreground="red")
 					count+=len(word)
-		self.__root.after(10,self.is_spelled_correctly)
+		self.__root.after(1,self.is_spelled_correctly)
 		
 	
 	#method to find the number of words in the file 
-	def __wordCount(self):
-		global switch 
+	def __wordCount(self): 
 		self.__thisTextArea.tag_remove("Error","1.0","end")
 		if switch=="ON":
+			
 			#word count is found 
 			data = self.__thisTextArea.get(1.0,END)
 			words = data.split()
@@ -361,21 +386,48 @@ class Notepad:
 		#Converting list to string for output 
 		#print(keywordsList)
 		keywordsStr = str(keywordsList)[1:-2]
-		tkinter.messagebox.showinfo("Keywords", keywordsStr) }
-		
+		tkinter.messagebox.showinfo("Keywords", keywordsStr) 
 	
-
-	
-	
-
 	def run(self):
 		# Run main application
 		self.__root.mainloop()
 
+'''	def find(self, *args):
+		self.text.tag_remove('found', '1.0', END)
+        target = askstring('Find','Search String:')
+
+        if target:
+            idx = '1.0'
+            while 1:
+                idx = self.text.search(target, idx, nocase=1, stopindex=END)
+                if not idx: break
+                lastidx = '%s+%dc' % (idx, len(target))
+                self.text.tag_add('found', idx, lastidx)
+                idx = lastidx
+            self.text.tag_config('found', foreground='white', background='blue')
+
+	
+	'''
+	
+ 
 
 
+def tracing_start():
+    tracemalloc.stop()
+    print("nTracing Status : ", tracemalloc.is_tracing())
+    tracemalloc.start()
+    print("Tracing Status : ", tracemalloc.is_tracing())
+def tracing_mem():
+    first_size, first_peak = tracemalloc.get_traced_memory()
+    peak = first_peak/(1024*1024)
+    print("Peak Size in MB - ", peak)
 
 # Run main application
-notepad = Notepad(width=600,height=400)
-notepad.run()
 
+notepad = Notepad(width=600,height=400)
+tracing_start()
+start = time.time()
+notepad.run()
+end = time.time()
+print("time elapsed {} milli seconds".format((end-start)*1000))
+tracing_mem()
